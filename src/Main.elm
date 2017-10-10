@@ -4,27 +4,38 @@ import Html.Attributes exposing (..)
 
 
 main =
-  view
+  view model
 
 
 -- MODEL
 
 
-type alias Model =
+type alias Skill =
   { title : String
   , description: String
   , progress: String
   }
 
+type alias Model =
+  List Skill
+
+model : Model
 model =
-  Model "Skill #1" "Some supporting for a description" "50"
+  [ Skill "Skill #1" "Some supporting for a description" "50"
+  , Skill "Skill #2" "Some supporting for a description" "25"
+  ]
 
 
 -- UPDATE
 -- VIEW
 
 
-view =
+view : Model -> Html msg
+view model =
+  div [ class "col" ] (List.map skillComponent model)
+
+skillComponent : Skill -> Html msg
+skillComponent model =
   div [ class "card" ]
     [ div [ class "card-body" ]
         [ h4 [ class "card-title" ] [ text model.title ]
