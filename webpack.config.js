@@ -15,7 +15,12 @@ module.exports = {
 	module: {
 		rules: [
 			{
-				test: /.scss$/,
+				test: /\.elm$/,
+				exclude: [/elm-stuff/, /node_modules/],
+				use: ['elm-webpack-loader']
+			},
+			{
+				test: /\.scss$/,
 				use: [
 					'style-loader',
 					'css-loader',
