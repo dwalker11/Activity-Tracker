@@ -27,14 +27,14 @@ type alias NewSkill =
   }
 
 type alias Model =
-  { skillList: List Skill
-  , newSkill: NewSkill
+  { list: List Skill
+  , skill: NewSkill
   }
 
 model : Model
 model =
-  { skillList = []
-  , newSkill = NewSkill "" ""
+  { list = []
+  , skill = NewSkill "" ""
   }
 
 
@@ -42,34 +42,34 @@ model =
 
 
 type Msg
-  = UpdateName String
-  | UpdateDescription String
-  | AddSkill
+  = UpdateSkillName String
+  | UpdateSkillDescription String
+  | AddSkillToList
 
 update : Msg -> Model -> Model
 update msg model =
   case msg of
-    UpdateName xName ->
+    UpdateSkillName updatedName ->
       let
-        oldSkill = model.newSkill
+        oldSkill = model.skill
 
-        skill = { oldSkill | name = xName }
+        updatedSkill = { oldSkill | name = updatedName }
       in
-        { model | newSkill = skill }
-    UpdateDescription xDescription ->
+        { model | skill = updatedSkill }
+    UpdateSkillDescription updatedDescription ->
       let
-        oldSkill = model.newSkill
+        oldSkill = model.skill
 
-        skill = { oldSkill | description = xDescription }
+        updatedSkill = { oldSkill | description = updatedDescription }
       in
-        { model | newSkill = skill }
-    AddSkill ->
+        { model | skill = updatedSkill }
+    AddSkillToList ->
       let
-        newSkill = Skill (.name model.newSkill) (.description model.newSkill) (toString 0)
+        newSkill = Skill (model.skill.name) (model.skill.description) (toString 0)
 
-        updatedSkillList = newSkill :: model.skillList
+        updatedSkillList = newSkill :: model.list
       in
-        { model | skillList = updatedSkillList }
+        { model | list = updatedSkillList }
 
 
 -- VIEW
@@ -78,9 +78,9 @@ update msg model =
 view : Model -> Html Msg
 view model =
   div []
-    [ addSkillForm model.newSkill
+    [ addSkillForm model.skill
     , hr [] []
-    , skillList model.skillList
+    , skillList model.list
     ]
 
 addSkillForm : NewSkill -> Html Msg
@@ -91,22 +91,22 @@ addSkillForm newSkill =
             [ div [ class "form-group row" ]
                 [ label [ for "somethingName", class "col-sm-2 col-form-label" ] [ text "Name" ]
                 , div [ class "col-sm-10" ]
-                    [ input [ type_ "text", class "form-control", id "somethingName", onInput UpdateName ] [] ]
+                    [ input [ type_ "text", class "form-control", id "somethingName", onInput UpdateSkillName ] [] ]
                 ]
             , div [ class "form-group row" ]
                 [ label [ for "somethingDescription", class "col-sm-2 col-form-label" ] [ text "Description" ]
                 , div [ class "col-sm-10" ]
-                    [ input [ type_ "text", class "form-control", id "somethingDescription", onInput UpdateDescription ] [] ]
+                    [ input [ type_ "text", class "form-control", id "somethingDescription", onInput UpdateSkillDescription ] [] ]
                 ]
-            , button [ type_ "button", class "btn btn-primary", onClick AddSkill ] [ text "Add" ]
+            , button [ type_ "button", class "btn btn-primary", onClick AddSkillToList ] [ text "Add" ]
             ]
         ]
     ]
 
 skillList : List Skill -> Html Msg
-skillList skillList =
+skillList list =
   div [ class "row" ]
-    [ div [ class "col" ] (List.map skillComponent skillList) ]
+    [ div [ class "col" ] (List.map skillComponent list) ]
 
 skillComponent : Skill -> Html Msg
 skillComponent skill =
