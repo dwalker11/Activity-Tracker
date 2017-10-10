@@ -32,15 +32,44 @@ model =
 
 view : Model -> Html msg
 view model =
-  div [ class "col" ] (List.map skillComponent model)
+  div []
+    [ addSkillForm
+    , hr [] []
+    , skillList model
+    ]
+
+addSkillForm : Html msg
+addSkillForm =
+  div [ class "row" ]
+    [ div [ class "col" ]
+        [ Html.form []
+            [ div [ class "form-group row" ]
+                [ label [ for "somethingName", class "col-sm-2 col-form-label" ] [ text "Name" ]
+                , div [ class "col-sm-10" ]
+                    [ input [ type_ "text", class "form-control", id "somethingName" ] [] ]
+                ]
+            , div [ class "form-group row" ]
+                [ label [ for "somethingDescription", class "col-sm-2 col-form-label" ] [ text "Description" ]
+                , div [ class "col-sm-10" ]
+                    [ input [ type_ "text", class "form-control", id "somethingDescription" ] [] ]
+                ]
+            , button [ type_ "submit", class "btn btn-primary" ] [ text "Add" ]
+            ]
+        ]
+    ]
+
+skillList : Model -> Html msg
+skillList model =
+  div [ class "row" ]
+    [ div [ class "col" ] (List.map skillComponent model) ]
 
 skillComponent : Skill -> Html msg
-skillComponent model =
+skillComponent skill =
   div [ class "card" ]
     [ div [ class "card-body" ]
-        [ h4 [ class "card-title" ] [ text model.title ]
-        , p [ class "card-text" ] [ text model.description ]
+        [ h4 [ class "card-title" ] [ text skill.title ]
+        , p [ class "card-text" ] [ text skill.description ]
         , div [ class "progress" ]
-            [ div [class "progress-bar", style [ ("width", model.progress ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" model.progress, attribute "aria-valuemin" "0", attribute "aria-valuemax" "100" ] [] ]
+            [ div [class "progress-bar", style [ ("width", skill.progress ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" skill.progress, attribute "aria-valuemin" "0", attribute "aria-valuemax" "100" ] [] ]
         ]
     ]
