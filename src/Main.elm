@@ -18,7 +18,7 @@ main =
 type alias Skill =
   { title : String
   , description: String
-  , progress: String
+  , time: Int
   }
 
 type alias NewSkill =
@@ -65,7 +65,7 @@ update msg model =
         { model | skill = updatedSkill }
     AddSkillToList ->
       let
-        newSkill = Skill (model.skill.name) (model.skill.description) (toString 0)
+        newSkill = Skill (model.skill.name) (model.skill.description) 0
 
         updatedSkillList = newSkill :: model.list
       in
@@ -79,6 +79,8 @@ view : Model -> Html Msg
 view model =
   div []
     [ addSkillForm model.skill
+    , hr [] []
+    , overvallProgress model.list
     , hr [] []
     , skillList model.list
     ]
@@ -103,6 +105,26 @@ addSkillForm newSkill =
         ]
     ]
 
+overvallProgress : List Skill -> Html msg
+overvallProgress list =
+  let
+    time = List.foldr (+) 0 (List.map .time list)
+
+    marker =
+      if time > 3000 then 600000
+      else if time > 1260 then 3000
+      else 1260
+
+    progress = (toFloat time) / marker * 100
+  in
+    div [ class "card" ]
+      [ div [ class "card-body" ]
+          [ h4 [ class "card-title" ] [ text "Overall Progress" ]
+          , div [ class "progress" ]
+              [ div [ class "progress-bar", style [ ("width", (toString progress) ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" (toString progress), attribute "aria-valuemin" "0", attribute "aria-valuemax" (toString marker) ] [] ]
+          ]
+      ]
+
 skillList : List Skill -> Html Msg
 skillList list =
   div [ class "row" ]
@@ -110,11 +132,19 @@ skillList list =
 
 skillComponent : Skill -> Html Msg
 skillComponent skill =
-  div [ class "card" ]
-    [ div [ class "card-body" ]
-        [ h4 [ class "card-title" ] [ text skill.title ]
-        , p [ class "card-text" ] [ text skill.description ]
-        , div [ class "progress" ]
-            [ div [ class "progress-bar", style [ ("width", skill.progress ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" skill.progress, attribute "aria-valuemin" "0", attribute "aria-valuemax" "100" ] [] ]
-        ]
-    ]
+  let
+    marker =
+      if skill.time > 3000 then 600000
+      else if skill.time > 1260 then 3000
+      else 1260
+
+    progress = (toFloat skill.time) / marker * 100
+  in
+    div [ class "card" ]
+      [ div [ class "card-body" ]
+          [ h4 [ class "card-title" ] [ text skill.title ]
+          , p [ class "card-text" ] [ text skill.description ]
+          , div [ class "progress" ]
+              [ div [ class "progress-bar", style [ ("width", (toString progress) ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" (toString progress), attribute "aria-valuemin" "0", attribute "aria-valuemax" (toString marker) ] [] ]
+          ]
+      ]
