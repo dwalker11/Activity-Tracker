@@ -1,6 +1,7 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
+import Array exposing (Array, fromList, toList)
 
 
 
@@ -27,13 +28,13 @@ type alias NewSkill =
   }
 
 type alias Model =
-  { list: List Skill
+  { list: Array Skill
   , skill: NewSkill
   }
 
 model : Model
 model =
-  { list = []
+  { list = fromList []
   , skill = NewSkill "" ""
   }
 
@@ -67,7 +68,7 @@ update msg model =
       let
         newSkill = Skill (model.skill.name) (model.skill.description) 0
 
-        updatedSkillList = newSkill :: model.list
+        updatedSkillList = Array.push newSkill model.list
       in
         { model | list = updatedSkillList }
 
@@ -78,12 +79,51 @@ update msg model =
 view : Model -> Html Msg
 view model =
   div []
-    [ addSkillForm model.skill
+    [ addTimeModal model.list
+    , addSkillForm model.skill
     , hr [] []
     , overvallProgress model.list
     , hr [] []
     , skillList model.list
     ]
+
+addTimeModal : Array Skill -> Html Msg
+addTimeModal list =
+  let
+    x = List.map (\n -> n * 5) (List.range 1 12)
+
+    y = List.map (\n -> option [ value (toString n) ] [ text (toString n) ]) (1 :: x)
+
+    indexedSkillList = toList (Array.indexedMap (,) (Array.map .title list))
+
+    skills = List.map (\(index, name) -> option [ value (toString index) ] [ text name ]) indexedSkillList
+  in
+    div [ class "modal show" ]
+      [ div [ class "modal-dialog modal-lg", attribute "role" "document" ]
+          [ div [ class "modal-content" ]
+              [ div [ class "modal-header" ]
+                  [ h5 [ class "modal-title" ] [ text "Add Time" ]
+                  , button [ type_ "button", class "close", attribute "data-dismiss" "modal", attribute "aria-label" "Close" ] [ span [ attribute "aria-hidden" "true" ] [text "×" ] ]
+                  ]
+              , div [ class "modal-body" ]
+                  [ Html.form [ class "form" ]
+                      [ div [ class "form-row" ]
+                          [ div [ class "col" ]
+                              [ select [ class "form-control" ]
+                                  (List.append [ option [] [ text "Select a Skill" ] ] skills)
+                              ]
+                          , div [ class "col" ]
+                              [ select [ class "form-control" ]
+                                  (List.append [ option [] [ text "Default time" ] ] y)
+                              ]
+                          , div [ class "col" ]
+                              [ button [ type_ "button", class "btn btn-primary" ] [ text "Add" ] ]
+                          ]
+                      ]
+                  ]
+              ]
+          ]
+      ]
 
 addSkillForm : NewSkill -> Html Msg
 addSkillForm newSkill =
@@ -105,10 +145,10 @@ addSkillForm newSkill =
         ]
     ]
 
-overvallProgress : List Skill -> Html msg
+overvallProgress : Array Skill -> Html msg
 overvallProgress list =
   let
-    time = List.foldr (+) 0 (List.map .time list)
+    time = Array.foldr (+) 0 (Array.map .time list)
 
     marker =
       if time > 3000 then 600000
@@ -125,10 +165,13 @@ overvallProgress list =
           ]
       ]
 
-skillList : List Skill -> Html Msg
+skillList : Array Skill -> Html Msg
 skillList list =
-  div [ class "row" ]
-    [ div [ class "col" ] (List.map skillComponent list) ]
+  let
+    componentList = (toList (Array.map skillComponent list))
+  in
+    div [ class "row" ]
+      [ div [ class "col" ] componentList ]
 
 skillComponent : Skill -> Html Msg
 skillComponent skill =
