@@ -1,7 +1,9 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onClick)
+import Html.Events exposing (on, onInput, onClick, targetValue)
 import Array exposing (Array, fromList, toList)
+import Json.Decode as Json
+import Result
 
 
 
@@ -27,15 +29,22 @@ type alias NewSkill =
   , description: String
   }
 
+type alias Updater =
+  { index: Int
+  , mintues: Int
+  }
+
 type alias Model =
   { list: Array Skill
   , skill: NewSkill
+  , updater: Updater
   }
 
 model : Model
 model =
   { list = fromList []
   , skill = NewSkill "" ""
+  , updater = Updater 0 0
   }
 
 
@@ -46,6 +55,9 @@ type Msg
   = UpdateSkillName String
   | UpdateSkillDescription String
   | AddSkillToList
+  | UpdateSelectedSkill String
+  | UpdateMinutesToAdd String
+  | AddMinutesToSelectedSkill
 
 update : Msg -> Model -> Model
 update msg model =
@@ -57,6 +69,7 @@ update msg model =
         updatedSkill = { oldSkill | name = updatedName }
       in
         { model | skill = updatedSkill }
+
     UpdateSkillDescription updatedDescription ->
       let
         oldSkill = model.skill
@@ -64,6 +77,7 @@ update msg model =
         updatedSkill = { oldSkill | description = updatedDescription }
       in
         { model | skill = updatedSkill }
+
     AddSkillToList ->
       let
         newSkill = Skill (model.skill.name) (model.skill.description) 0
@@ -71,6 +85,42 @@ update msg model =
         updatedSkillList = Array.push newSkill model.list
       in
         { model | list = updatedSkillList }
+
+    UpdateSelectedSkill val ->
+      let
+        oldUpdater = model.updater
+
+        updatedUpdater = { oldUpdater | index = (Result.withDefault 0 (String.toInt val)) }
+      in
+        { model | updater = updatedUpdater }
+
+    UpdateMinutesToAdd val ->
+      let
+        oldUpdater = model.updater
+
+        updatedUpdater = { oldUpdater | mintues = (Result.withDefault 0 (String.toInt val)) }
+      in
+        { model | updater = updatedUpdater }
+
+    AddMinutesToSelectedSkill ->
+      let
+        index = model.updater.index
+
+        maybeSkill = Array.get index model.list
+      in
+        case maybeSkill of
+          Just currentSkill ->
+            let
+              addTime = (+) model.updater.mintues
+
+              updatedSkill = { currentSkill | time = addTime currentSkill.time }
+
+              updatedSkillList = Array.set index updatedSkill model.list
+            in
+              { model | list = updatedSkillList }
+
+          Nothing ->
+            model
 
 
 -- VIEW
@@ -98,7 +148,7 @@ addTimeModal list =
 
     skills = List.map (\(index, name) -> option [ value (toString index) ] [ text name ]) indexedSkillList
   in
-    div [ class "modal show" ]
+    div [ class "modal fade", id "somethingModal" ]
       [ div [ class "modal-dialog modal-lg", attribute "role" "document" ]
           [ div [ class "modal-content" ]
               [ div [ class "modal-header" ]
@@ -109,15 +159,15 @@ addTimeModal list =
                   [ Html.form [ class "form" ]
                       [ div [ class "form-row" ]
                           [ div [ class "col" ]
-                              [ select [ class "form-control" ]
+                              [ select [ class "form-control", on "change" (Json.map UpdateSelectedSkill targetValue) ]
                                   (List.append [ option [] [ text "Select a Skill" ] ] skills)
                               ]
                           , div [ class "col" ]
-                              [ select [ class "form-control" ]
+                              [ select [ class "form-control", on "change" (Json.map UpdateMinutesToAdd targetValue) ]
                                   (List.append [ option [] [ text "Default time" ] ] y)
                               ]
                           , div [ class "col" ]
-                              [ button [ type_ "button", class "btn btn-primary" ] [ text "Add" ] ]
+                              [ button [ type_ "button", class "btn btn-primary", onClick AddMinutesToSelectedSkill ] [ text "Add" ] ]
                           ]
                       ]
                   ]
