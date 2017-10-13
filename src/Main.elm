@@ -22,6 +22,7 @@ type alias Skill =
   { title : String
   , description: String
   , time: Int
+  , locked: Bool
   }
 
 type alias NewSkill =
@@ -58,6 +59,7 @@ type Msg
   | UpdateSelectedSkill String
   | UpdateMinutesToAdd String
   | AddMinutesToSelectedSkill
+  | UnlockSkill Int
 
 update : Msg -> Model -> Model
 update msg model =
@@ -80,7 +82,7 @@ update msg model =
 
     AddSkillToList ->
       let
-        newSkill = Skill (model.skill.name) (model.skill.description) 0
+        newSkill = Skill (model.skill.name) (model.skill.description) 0 True
 
         updatedSkillList = Array.push newSkill model.list
       in
@@ -122,6 +124,22 @@ update msg model =
           Nothing ->
             model
 
+    UnlockSkill index ->
+      let
+        maybeSkill = Array.get index model.list
+      in
+        case maybeSkill of
+          Just currentSkill ->
+            let
+              updatedSkill = { currentSkill | locked = False }
+
+              updatedSkillList = Array.set index updatedSkill model.list
+            in
+              { model | list = updatedSkillList }
+
+          Nothing ->
+            model
+
 
 -- VIEW
 
@@ -144,7 +162,7 @@ addTimeModal list =
 
     y = List.map (\n -> option [ value (toString n) ] [ text (toString n) ]) (1 :: x)
 
-    indexedSkillList = toList (Array.indexedMap (,) (Array.map .title list))
+    indexedSkillList = toList (Array.indexedMap (,) (Array.map .title (Array.filter (\{locked} -> not locked) list)))
 
     skills = List.map (\(index, name) -> option [ value (toString index) ] [ text name ]) indexedSkillList
   in
@@ -218,24 +236,29 @@ overvallProgress list =
 skillList : Array Skill -> Html Msg
 skillList list =
   let
-    componentList = (toList (Array.map skillComponent list))
+    componentList = (toList (Array.indexedMap skillComponent list))
   in
     div [ class "row" ]
       [ div [ class "col" ] componentList ]
 
-skillComponent : Skill -> Html Msg
-skillComponent skill =
+skillComponent : Int -> Skill -> Html Msg
+skillComponent index skill =
   let
     marker =
       if skill.time > 3000 then 600000
       else if skill.time > 1260 then 3000
       else 1260
 
+    textClass = if (skill.locked) then "card-body text-secondary" else "card-body"
+
+    btnStyle = if (skill.locked) then [ ("display", "block") ] else [ ("display", "none") ]
+
     progress = (toFloat skill.time) / marker * 100
   in
     div [ class "card" ]
-      [ div [ class "card-body" ]
-          [ h4 [ class "card-title" ] [ text skill.title ]
+      [ div [ class textClass ]
+          [ button [ type_ "button", class "btn btn-lg btn-primary float-right", style btnStyle, onClick (UnlockSkill index) ] [ text "Unlock" ]
+          , h4 [ class "card-title" ] [ text skill.title ]
           , p [ class "card-text" ] [ text skill.description ]
           , div [ class "progress" ]
               [ div [ class "progress-bar", style [ ("width", (toString progress) ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" (toString progress), attribute "aria-valuemin" "0", attribute "aria-valuemax" (toString marker) ] [] ]
