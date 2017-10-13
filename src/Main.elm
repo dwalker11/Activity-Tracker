@@ -236,13 +236,24 @@ overvallProgress list =
 skillList : Array Skill -> Html Msg
 skillList list =
   let
-    componentList = (toList (Array.indexedMap skillComponent list))
+    totalTime = Array.foldr (+) 0 (Array.map .time list)
+
+    totalSlots =
+      if totalTime > 3000 then 24
+      else if totalTime > 1260 then 9
+      else 3
+
+    usedSlots = Array.length (Array.filter (\{locked} -> not locked) list)
+
+    availableSlots = totalSlots - usedSlots
+
+    componentList = (toList (Array.indexedMap skillComponent (Array.map (\x -> (,) x (availableSlots > 0)) list)))
   in
     div [ class "row" ]
       [ div [ class "col" ] componentList ]
 
-skillComponent : Int -> Skill -> Html Msg
-skillComponent index skill =
+skillComponent : Int -> (Skill, Bool) -> Html Msg
+skillComponent index (skill, availableToUnlock) =
   let
     marker =
       if skill.time > 3000 then 600000
@@ -257,7 +268,7 @@ skillComponent index skill =
   in
     div [ class "card" ]
       [ div [ class textClass ]
-          [ button [ type_ "button", class "btn btn-lg btn-primary float-right", style btnStyle, onClick (UnlockSkill index) ] [ text "Unlock" ]
+          [ button [ type_ "button", class "btn btn-lg btn-primary float-right", style btnStyle, onClick (UnlockSkill index), disabled (not availableToUnlock) ] [ text "Unlock" ]
           , h4 [ class "card-title" ] [ text skill.title ]
           , p [ class "card-text" ] [ text skill.description ]
           , div [ class "progress" ]
