@@ -1,5 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 
 module.exports = {
@@ -9,7 +11,7 @@ module.exports = {
 
 	output: {
 		path: path.resolve(__dirname, 'dist'),
-		filename: 'bundle.js'
+		filename: 'scripts/bundle.js'
 	},
 
 	module: {
@@ -21,12 +23,10 @@ module.exports = {
 			},
 			{
 				test: /\.scss$/,
-				use: [
-					'style-loader',
-					'css-loader',
-					'postcss-loader',
-					'sass-loader'
-				]
+				use: ExtractTextPlugin.extract({
+					fallback: 'style-loader',
+					use: ['css-loader', 'postcss-loader', 'sass-loader']
+				})
 			}
 		]
 	},
@@ -37,6 +37,12 @@ module.exports = {
 			jQuery: 'jquery',
 			'window.jQuery': 'jquery',
 			Popper: ['popper.js', 'default']
+		}),
+		new CleanWebpackPlugin(['dist'], {
+			exclude: ['index.html']
+		}),
+		new ExtractTextPlugin({
+			filename: 'styles/main.css'
 		})
 	],
 
@@ -44,4 +50,3 @@ module.exports = {
 		contentBase: './dist'
 	}
 }
-

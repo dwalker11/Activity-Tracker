@@ -213,7 +213,7 @@ addSkillForm newSkill =
         ]
     ]
 
-overvallProgress : Array Skill -> Html msg
+overvallProgress : Array Skill -> Html Msg
 overvallProgress list =
   let
     time = Array.foldr (+) 0 (Array.map .time list)
@@ -260,9 +260,9 @@ skillComponent index (skill, availableToUnlock) =
       else if skill.time > 1260 then 3000
       else 1260
 
-    textClass = if (skill.locked) then "card-body text-secondary" else "card-body"
+    textClass = if skill.locked then "card-body text-secondary" else "card-body"
 
-    btnStyle = if (skill.locked) then [ ("display", "block") ] else [ ("display", "none") ]
+    btnStyle = if skill.locked then [ ("display", "block") ] else [ ("display", "none") ]
 
     progress = (toFloat skill.time) / marker * 100
   in

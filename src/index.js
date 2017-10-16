@@ -2,10 +2,10 @@
 import 'bootstrap';
 
 // Styles
-import './styles.scss';
+import './sass/main.scss';
 
 // Elm
-import Elm from './Main.elm';
+import Elm from './elm/Main.elm';
 
 let node = document.getElementById('app');
 Elm.Main.embed(node);
