@@ -5,8 +5,11 @@
   "main": "src/index.js",
   "dependencies": {
     "bootstrap": "^4.0.0-beta",
+    "express": "^4.16.2",
     "jquery": "^3.2.1",
-    "popper.js": "^1.12.5"
+    "nocache": "^2.0.0",
+    "popper.js": "^1.12.5",
+    "pug": "^2.0.0-rc.4"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.5",
