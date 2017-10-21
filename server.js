@@ -4,6 +4,7 @@ const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const MemcachedStore = require('connect-memcached')(session);
 const flash = require('connect-flash');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -17,13 +18,13 @@ app.set('views', 'views');
 app.set('view engine', 'pug');
 
 // application middleware
-/* app.use(favicon(path.join(__dirname, 'dist', 'favicon.ico'))); */
+app.use(favicon(path.join(__dirname, 'favicon.ico')));
 app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'dist')));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(session({ secret: 'call your girlfriend', resave: true, saveUninitialized: true }));
+app.use(session({ secret: 'call your girlfriend', resave: true, saveUninitialized: true, store: new MemcachedStore({ hosts: ['127.0.0.1:11211'], secret: 'have a cigar' }) }));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
