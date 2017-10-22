@@ -2,11 +2,9 @@ const express = require('express');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
-
-// passport authentication middleware
-const db = require('../db');
 const User = require('../models/User');
 
+// passport authentication middleware
 passport.use(new LocalStrategy(function (username, password, done) {
 	User.findOne({username: username}, function (err, user) {
 		if (err) return done(err);
@@ -45,7 +43,27 @@ router.get('/register', function (req, res) {
 });
 
 router.post('/register', function (req, res) {
-	res.render('register');
+	const saltRounds = 10;
+
+	bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
+		if (err) return next(err);
+
+		let newUser = {
+			username: req.body.username,
+			email: req.body.email,
+			password: hash
+		};
+
+		User.create(newUser, function (err, user) {
+			if (err) return next(err);
+
+			req.login(user, function (err) {
+				if (err) return next(err);
+
+				res.redirect('/profile');
+			});
+		});
+	});
 });
 
 router.get('/login', function (req, res) {
