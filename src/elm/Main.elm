@@ -8,10 +8,11 @@ import Result
 
 
 main =
-  Html.beginnerProgram
-    { model = model
+  Html.programWithFlags
+    { init = init
     , view = view
     , update = update
+    , subscriptions = subscriptions
     }
 
 
@@ -41,12 +42,22 @@ type alias Model =
   , updater: Updater
   }
 
-model : Model
-model =
-  { list = fromList []
-  , skill = NewSkill "" ""
-  , updater = Updater 0 0
-  }
+type alias Flags =
+  { skills : List Skill }
+
+init : Flags -> (Model, Cmd Msg)
+init flag =
+  ( Model (fromList flag.skills) (NewSkill "" "") (Updater 0 0)
+  , Cmd.none
+  )
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Sub.none
 
 
 -- UPDATE
@@ -61,7 +72,7 @@ type Msg
   | AddMinutesToSelectedSkill
   | UnlockSkill Int
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
   case msg of
     UpdateSkillName updatedName ->
@@ -70,7 +81,7 @@ update msg model =
 
         updatedSkill = { oldSkill | name = updatedName }
       in
-        { model | skill = updatedSkill }
+        ({ model | skill = updatedSkill }, Cmd.none)
 
     UpdateSkillDescription updatedDescription ->
       let
@@ -78,7 +89,7 @@ update msg model =
 
         updatedSkill = { oldSkill | description = updatedDescription }
       in
-        { model | skill = updatedSkill }
+        ({ model | skill = updatedSkill }, Cmd.none)
 
     AddSkillToList ->
       let
@@ -86,7 +97,7 @@ update msg model =
 
         updatedSkillList = Array.push newSkill model.list
       in
-        { model | list = updatedSkillList }
+        ({ model | list = updatedSkillList }, Cmd.none)
 
     UpdateSelectedSkill val ->
       let
@@ -94,7 +105,7 @@ update msg model =
 
         updatedUpdater = { oldUpdater | index = (Result.withDefault 0 (String.toInt val)) }
       in
-        { model | updater = updatedUpdater }
+        ({ model | updater = updatedUpdater }, Cmd.none)
 
     UpdateMinutesToAdd val ->
       let
@@ -102,7 +113,7 @@ update msg model =
 
         updatedUpdater = { oldUpdater | mintues = (Result.withDefault 0 (String.toInt val)) }
       in
-        { model | updater = updatedUpdater }
+        ({ model | updater = updatedUpdater }, Cmd.none)
 
     AddMinutesToSelectedSkill ->
       let
@@ -119,10 +130,10 @@ update msg model =
 
               updatedSkillList = Array.set index updatedSkill model.list
             in
-              { model | list = updatedSkillList }
+              ({ model | list = updatedSkillList }, Cmd.none)
 
           Nothing ->
-            model
+            (model, Cmd.none)
 
     UnlockSkill index ->
       let
@@ -135,10 +146,10 @@ update msg model =
 
               updatedSkillList = Array.set index updatedSkill model.list
             in
-              { model | list = updatedSkillList }
+              ({ model | list = updatedSkillList }, Cmd.none)
 
           Nothing ->
-            model
+            (model, Cmd.none)
 
 
 -- VIEW

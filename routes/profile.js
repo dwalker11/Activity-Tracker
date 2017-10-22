@@ -10,7 +10,11 @@ router.use(function (req, res, next) {
 });
 
 router.get('/', function (req, res) {
-	res.render('profile', { user: req.user});
+  let user = {
+    skills: req.user.skills
+  };
+
+	res.render('profile', { user: user });
 });
 
 router.post('/skills', function (req, res) {
