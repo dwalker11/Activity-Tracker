@@ -40,4 +40,7 @@ var UserSchema = new Schema({
   }
 });
 
+UserSchema.set('toJSON', { getters: true, virtuals: true });
+SkillSchema.set('toJSON', { getters: true, virtuals: true });
+
 module.exports = mongoose.model('User', UserSchema);

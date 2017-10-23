@@ -28,10 +28,14 @@ router.post('/skills', function (req, res) {
     description: desc
   });
 
-  user.save(function (err) {
+  user.save(function (err, user) {
     if (err) return next(err);
 
+    let index = user.skills.length - 1;
+    let skill = user.skills[index];
+
     res.json({
+      id: skill.id,
       status: "success"
     });
   });
@@ -43,9 +47,7 @@ router.patch('/skills/:id', function (req, res) {
   let value = req.body.value;
   let skill = user.skills.id(req.params.id);
 
-  skill.field = value;
-
-  console.log(req.user.skills);
+  skill[field] = value;
 
   user.save(function (err) {
     if (err) return next(err);
@@ -59,8 +61,6 @@ router.patch('/skills/:id', function (req, res) {
 router.delete('/skills/:id', function (req, res) {
   let user = req.user;
   let skill = user.skills.id(req.params.id).remove();
-
-  console.log(req.user.skills);
 
   user.save(function (err) {
     if (err) return next(err);

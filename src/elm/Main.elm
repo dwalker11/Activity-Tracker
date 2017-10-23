@@ -22,7 +22,8 @@ main =
 
 
 type alias Skill =
-  { name : String
+  { id : String
+  , name: String
   , description: String
   , minutes: Int
   , locked: Bool
@@ -69,7 +70,7 @@ type Msg
   = UpdateNewSkillName String
   | UpdateNewSkillDescription String
   | CreateNewSkill
-  | StoreNewSkill (Result Http.Error (List String))
+  | StoreNewSkill (Result Http.Error String)
   | UpdateSelection String
   | UpdateMinutesToAdd String
   | AddMinutesToSelectedSkill
@@ -103,7 +104,7 @@ update msg model =
     CreateNewSkill ->
       let
         newSkill =
-          Skill (model.skillGenerator.name) (model.skillGenerator.description) 0 True
+          Skill "" (model.skillGenerator.name) (model.skillGenerator.description) 0 True
 
         updatedSkillList =
           Array.push newSkill model.userSkills
@@ -111,10 +112,28 @@ update msg model =
         ({ model | userSkills = updatedSkillList }, Http.send StoreNewSkill (postSkill newSkill))
 
     StoreNewSkill (Ok val) ->
-      (model, Cmd.none)
+      let
+        index =
+          (-) (Array.length model.userSkills) 1
+
+        maybeSkill =
+          Array.get index model.userSkills
+      in
+        case maybeSkill of
+          Just currentSkill ->
+            let
+              updatedSkill =
+                { currentSkill | id = val }
+
+              updatedSkillList =
+                Array.set index updatedSkill model.userSkills
+            in
+              ({ model | userSkills = updatedSkillList }, Cmd.none)
+          Nothing ->
+            (model, Cmd.none)
 
     StoreNewSkill (Err _) ->
-        (model, Cmd.none)
+      (model, Cmd.none)
 
     UpdateSelection val ->
       let
@@ -156,7 +175,7 @@ update msg model =
               updatedSkillList =
                 Array.set index updatedSkill model.userSkills
             in
-              ({ model | userSkills = updatedSkillList }, Http.send StoreUpdatedSkill (patchSkill "minutes" (Json.Encode.int time)))
+              ({ model | userSkills = updatedSkillList }, Http.send StoreUpdatedSkill (patchSkill currentSkill (Json.Encode.string "minutes") (Json.Encode.int time)))
 
           Nothing ->
             (model, Cmd.none)
@@ -181,7 +200,7 @@ update msg model =
               updatedSkillList =
                 Array.set index updatedSkill model.userSkills
             in
-              ({ model | userSkills = updatedSkillList }, Http.send UnlockStoredSkill (patchSkill "locked" (Json.Encode.bool False)))
+              ({ model | userSkills = updatedSkillList }, Http.send UnlockStoredSkill (patchSkill currentSkill (Json.Encode.string "locked") (Json.Encode.bool False)))
 
           Nothing ->
             (model, Cmd.none)
@@ -192,7 +211,7 @@ update msg model =
     UnlockStoredSkill (Err _) ->
       (model, Cmd.none)
 
-postSkill : Skill -> Http.Request (List String)
+postSkill : Skill -> Http.Request String
 postSkill skill =
   let
     url =
@@ -204,17 +223,17 @@ postSkill skill =
         , ("description", Json.Encode.string skill.description)
         ]
   in
-    post url (Http.jsonBody payload) (Json.Decode.list Json.Decode.string)
+    post url (Http.jsonBody payload) (Json.Decode.field "id" Json.Decode.string)
 
-patchSkill : String -> Json.Encode.Value -> Http.Request (List String)
-patchSkill field value =
+patchSkill : Skill -> Json.Encode.Value -> Json.Encode.Value -> Http.Request (List String)
+patchSkill skill field value =
   let
     url =
-      "/profile/skills"
+      "/profile/skills/" ++ skill.id
 
     payload =
       Json.Encode.object
-        [ ("field", Json.Encode.string field)
+        [ ("field", field)
         , ("value", value)
         ]
   in
