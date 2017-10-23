@@ -1,9 +1,11 @@
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (id, class, style, attribute, disabled, type_, for, value)
 import Html.Events exposing (on, onInput, onClick, targetValue)
-import Array exposing (Array, fromList, toList)
-import Json.Decode as Json
+import Http exposing (post)
+import Json.Encode
+import Json.Decode
 import Result
+import Array exposing (Array, fromList, toList, indexedMap)
 
 
 
@@ -20,26 +22,26 @@ main =
 
 
 type alias Skill =
-  { title : String
+  { name : String
   , description: String
-  , time: Int
+  , minutes: Int
   , locked: Bool
   }
 
-type alias NewSkill =
+type alias Generator =
   { name: String
   , description: String
   }
 
 type alias Updater =
   { index: Int
-  , mintues: Int
+  , minutes: Int
   }
 
 type alias Model =
-  { list: Array Skill
-  , skill: NewSkill
-  , updater: Updater
+  { userSkills: Array Skill
+  , skillGenerator: Generator
+  , skillUpdater: Updater
   }
 
 type alias Flags =
@@ -47,7 +49,7 @@ type alias Flags =
 
 init : Flags -> (Model, Cmd Msg)
 init flag =
-  ( Model (fromList flag.skills) (NewSkill "" "") (Updater 0 0)
+  ( Model (fromList flag.skills) (Generator "" "") (Updater 0 0)
   , Cmd.none
   )
 
@@ -64,92 +66,171 @@ subscriptions model =
 
 
 type Msg
-  = UpdateSkillName String
-  | UpdateSkillDescription String
-  | AddSkillToList
-  | UpdateSelectedSkill String
+  = UpdateNewSkillName String
+  | UpdateNewSkillDescription String
+  | CreateNewSkill
+  | StoreNewSkill (Result Http.Error (List String))
+  | UpdateSelection String
   | UpdateMinutesToAdd String
   | AddMinutesToSelectedSkill
+  | StoreUpdatedSkill (Result Http.Error (List String))
   | UnlockSkill Int
+  | UnlockStoredSkill (Result Http.Error (List String))
 
-update : Msg -> Model -> ( Model, Cmd Msg)
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    UpdateSkillName updatedName ->
+    UpdateNewSkillName updatedName ->
       let
-        oldSkill = model.skill
+        generator =
+          model.skillGenerator
 
-        updatedSkill = { oldSkill | name = updatedName }
+        updatedSkill =
+          { generator | name = updatedName }
       in
-        ({ model | skill = updatedSkill }, Cmd.none)
+        ({ model | skillGenerator = updatedSkill }, Cmd.none)
 
-    UpdateSkillDescription updatedDescription ->
+    UpdateNewSkillDescription updatedDescription ->
       let
-        oldSkill = model.skill
+        generator =
+          model.skillGenerator
 
-        updatedSkill = { oldSkill | description = updatedDescription }
+        updatedSkill =
+          { generator | description = updatedDescription }
       in
-        ({ model | skill = updatedSkill }, Cmd.none)
+        ({ model | skillGenerator = updatedSkill }, Cmd.none)
 
-    AddSkillToList ->
+    CreateNewSkill ->
       let
-        newSkill = Skill (model.skill.name) (model.skill.description) 0 True
+        newSkill =
+          Skill (model.skillGenerator.name) (model.skillGenerator.description) 0 True
 
-        updatedSkillList = Array.push newSkill model.list
+        updatedSkillList =
+          Array.push newSkill model.userSkills
       in
-        ({ model | list = updatedSkillList }, Cmd.none)
+        ({ model | userSkills = updatedSkillList }, Http.send StoreNewSkill (postSkill newSkill))
 
-    UpdateSelectedSkill val ->
+    StoreNewSkill (Ok val) ->
+      (model, Cmd.none)
+
+    StoreNewSkill (Err _) ->
+        (model, Cmd.none)
+
+    UpdateSelection val ->
       let
-        oldUpdater = model.updater
+        oldUpdater =
+          model.skillUpdater
 
-        updatedUpdater = { oldUpdater | index = (Result.withDefault 0 (String.toInt val)) }
+        newUpdater =
+          { oldUpdater | index = (Result.withDefault 0 (String.toInt val)) }
       in
-        ({ model | updater = updatedUpdater }, Cmd.none)
+        ({ model | skillUpdater = newUpdater }, Cmd.none)
 
     UpdateMinutesToAdd val ->
       let
-        oldUpdater = model.updater
+        oldUpdater =
+          model.skillUpdater
 
-        updatedUpdater = { oldUpdater | mintues = (Result.withDefault 0 (String.toInt val)) }
+        newUpdater =
+          { oldUpdater | minutes = (Result.withDefault 0 (String.toInt val)) }
       in
-        ({ model | updater = updatedUpdater }, Cmd.none)
+        ({ model | skillUpdater = newUpdater }, Cmd.none)
 
     AddMinutesToSelectedSkill ->
       let
-        index = model.updater.index
+        index =
+          model.skillUpdater.index
 
-        maybeSkill = Array.get index model.list
+        maybeSkill =
+          Array.get index model.userSkills
       in
         case maybeSkill of
           Just currentSkill ->
             let
-              addTime = (+) model.updater.mintues
+              time =
+                currentSkill.minutes + model.skillUpdater.minutes
 
-              updatedSkill = { currentSkill | time = addTime currentSkill.time }
+              updatedSkill =
+                { currentSkill | minutes = time }
 
-              updatedSkillList = Array.set index updatedSkill model.list
+              updatedSkillList =
+                Array.set index updatedSkill model.userSkills
             in
-              ({ model | list = updatedSkillList }, Cmd.none)
+              ({ model | userSkills = updatedSkillList }, Http.send StoreUpdatedSkill (patchSkill "minutes" (Json.Encode.int time)))
 
           Nothing ->
             (model, Cmd.none)
+
+    StoreUpdatedSkill (Ok val) ->
+      (model, Cmd.none)
+
+    StoreUpdatedSkill (Err _) ->
+      (model, Cmd.none)
 
     UnlockSkill index ->
       let
-        maybeSkill = Array.get index model.list
+        maybeSkill =
+          Array.get index model.userSkills
       in
         case maybeSkill of
           Just currentSkill ->
             let
-              updatedSkill = { currentSkill | locked = False }
+              updatedSkill =
+                { currentSkill | locked = False }
 
-              updatedSkillList = Array.set index updatedSkill model.list
+              updatedSkillList =
+                Array.set index updatedSkill model.userSkills
             in
-              ({ model | list = updatedSkillList }, Cmd.none)
+              ({ model | userSkills = updatedSkillList }, Http.send UnlockStoredSkill (patchSkill "locked" (Json.Encode.bool False)))
 
           Nothing ->
             (model, Cmd.none)
+
+    UnlockStoredSkill (Ok val) ->
+      (model, Cmd.none)
+
+    UnlockStoredSkill (Err _) ->
+      (model, Cmd.none)
+
+postSkill : Skill -> Http.Request (List String)
+postSkill skill =
+  let
+    url =
+      "/profile/skills"
+
+    payload =
+      Json.Encode.object
+        [ ("name", Json.Encode.string skill.name)
+        , ("description", Json.Encode.string skill.description)
+        ]
+  in
+    post url (Http.jsonBody payload) (Json.Decode.list Json.Decode.string)
+
+patchSkill : String -> Json.Encode.Value -> Http.Request (List String)
+patchSkill field value =
+  let
+    url =
+      "/profile/skills"
+
+    payload =
+      Json.Encode.object
+        [ ("field", Json.Encode.string field)
+        , ("value", value)
+        ]
+  in
+    patch url (Http.jsonBody payload) (Json.Decode.list Json.Decode.string)
+
+patch : String -> Http.Body -> Json.Decode.Decoder (List String) -> Http.Request (List String)
+patch url body decoder =
+  Http.request
+    { method = "PATCH"
+    , headers = []
+    , url = url
+    , body = body
+    , expect = Http.expectJson decoder
+    , timeout = Nothing
+    , withCredentials = False
+    }
 
 
 -- VIEW
@@ -158,24 +239,30 @@ update msg model =
 view : Model -> Html Msg
 view model =
   div []
-    [ addTimeModal model.list
-    , addSkillForm model.skill
+    [ addTimeModal model.userSkills
+    , addSkillForm model.skillGenerator
     , hr [] []
-    , overvallProgress model.list
+    , overvallProgress model.userSkills
     , hr [] []
-    , skillList model.list
+    , skillList model.userSkills
     ]
 
 addTimeModal : Array Skill -> Html Msg
 addTimeModal list =
   let
-    x = List.map (\n -> n * 5) (List.range 1 12)
+    minutes =
+      List.range 1 12
+        |> List.map (\n -> n * 5)
+        |> (::) 1
+        |> List.map (\n -> option [ value (toString n) ] [ text (toString n) ])
 
-    y = List.map (\n -> option [ value (toString n) ] [ text (toString n) ]) (1 :: x)
-
-    indexedSkillList = toList (Array.indexedMap (,) (Array.map .title (Array.filter (\{locked} -> not locked) list)))
-
-    skills = List.map (\(index, name) -> option [ value (toString index) ] [ text name ]) indexedSkillList
+    skills =
+      list
+        |> Array.filter (\{locked} -> not locked)
+        |> Array.map .name
+        |> indexedMap (,)
+        |> toList
+        |> List.map (\(index, name) -> option [ value (toString index) ] [ text name ])
   in
     div [ class "modal fade", id "somethingModal" ]
       [ div [ class "modal-dialog modal-lg", attribute "role" "document" ]
@@ -185,15 +272,15 @@ addTimeModal list =
                   , button [ type_ "button", class "close", attribute "data-dismiss" "modal", attribute "aria-label" "Close" ] [ span [ attribute "aria-hidden" "true" ] [text "×" ] ]
                   ]
               , div [ class "modal-body" ]
-                  [ Html.form [ class "form" ]
+                  [ form [ class "form" ]
                       [ div [ class "form-row" ]
                           [ div [ class "col" ]
-                              [ select [ class "form-control", on "change" (Json.map UpdateSelectedSkill targetValue) ]
+                              [ select [ class "form-control", on "change" (Json.Decode.map UpdateSelection targetValue) ]
                                   (List.append [ option [] [ text "Select a Skill" ] ] skills)
                               ]
                           , div [ class "col" ]
-                              [ select [ class "form-control", on "change" (Json.map UpdateMinutesToAdd targetValue) ]
-                                  (List.append [ option [] [ text "Default time" ] ] y)
+                              [ select [ class "form-control", on "change" (Json.Decode.map UpdateMinutesToAdd targetValue) ]
+                                  (List.append [ option [] [ text "Default time" ] ] minutes)
                               ]
                           , div [ class "col" ]
                               [ button [ type_ "button", class "btn btn-primary", onClick AddMinutesToSelectedSkill ] [ text "Add" ] ]
@@ -204,22 +291,22 @@ addTimeModal list =
           ]
       ]
 
-addSkillForm : NewSkill -> Html Msg
+addSkillForm : Generator -> Html Msg
 addSkillForm newSkill =
   div [ class "row" ]
     [ div [ class "col" ]
-        [ Html.form []
+        [ form []
             [ div [ class "form-group row" ]
                 [ label [ for "somethingName", class "col-sm-2 col-form-label" ] [ text "Name" ]
                 , div [ class "col-sm-10" ]
-                    [ input [ type_ "text", class "form-control", id "somethingName", onInput UpdateSkillName ] [] ]
+                    [ input [ type_ "text", class "form-control", id "somethingName", onInput UpdateNewSkillName ] [] ]
                 ]
             , div [ class "form-group row" ]
                 [ label [ for "somethingDescription", class "col-sm-2 col-form-label" ] [ text "Description" ]
                 , div [ class "col-sm-10" ]
-                    [ input [ type_ "text", class "form-control", id "somethingDescription", onInput UpdateSkillDescription ] [] ]
+                    [ input [ type_ "text", class "form-control", id "somethingDescription", onInput UpdateNewSkillDescription ] [] ]
                 ]
-            , button [ type_ "button", class "btn btn-primary", onClick AddSkillToList ] [ text "Add" ]
+            , button [ type_ "button", class "btn btn-primary", onClick CreateNewSkill ] [ text "Add" ]
             ]
         ]
     ]
@@ -227,14 +314,16 @@ addSkillForm newSkill =
 overvallProgress : Array Skill -> Html Msg
 overvallProgress list =
   let
-    time = Array.foldr (+) 0 (Array.map .time list)
+    totalMinutes =
+      Array.foldr (+) 0 (Array.map .minutes list)
 
     marker =
-      if time > 3000 then 600000
-      else if time > 1260 then 3000
+      if totalMinutes > 3000 then 600000
+      else if totalMinutes > 1260 then 3000
       else 1260
 
-    progress = (toFloat time) / marker * 100
+    progress =
+      (toFloat totalMinutes) / marker * 100
   in
     div [ class "card" ]
       [ div [ class "card-body" ]
@@ -247,18 +336,25 @@ overvallProgress list =
 skillList : Array Skill -> Html Msg
 skillList list =
   let
-    totalTime = Array.foldr (+) 0 (Array.map .time list)
+    totalMinutes =
+      Array.foldr (+) 0 (Array.map .minutes list)
 
     totalSlots =
-      if totalTime > 3000 then 24
-      else if totalTime > 1260 then 9
+      if totalMinutes > 3000 then 24
+      else if totalMinutes > 1260 then 9
       else 3
 
-    usedSlots = Array.length (Array.filter (\{locked} -> not locked) list)
+    usedSlots =
+      Array.length (Array.filter (\{locked} -> not locked) list)
 
-    availableSlots = totalSlots - usedSlots
+    availableSlots =
+      totalSlots - usedSlots
 
-    componentList = (toList (Array.indexedMap skillComponent (Array.map (\x -> (,) x (availableSlots > 0)) list)))
+    componentList =
+      list
+        |> Array.map (\n -> (,) n (availableSlots > 0))
+        |> indexedMap skillComponent
+        |> toList
   in
     div [ class "row" ]
       [ div [ class "col" ] componentList ]
@@ -267,20 +363,23 @@ skillComponent : Int -> (Skill, Bool) -> Html Msg
 skillComponent index (skill, availableToUnlock) =
   let
     marker =
-      if skill.time > 3000 then 600000
-      else if skill.time > 1260 then 3000
+      if skill.minutes > 3000 then 600000
+      else if skill.minutes > 1260 then 3000
       else 1260
 
-    textClass = if skill.locked then "card-body text-secondary" else "card-body"
+    progress =
+      (toFloat skill.minutes) / marker * 100
 
-    btnStyle = if skill.locked then [ ("display", "block") ] else [ ("display", "none") ]
+    textClass =
+      if skill.locked then "card-body text-secondary" else "card-body"
 
-    progress = (toFloat skill.time) / marker * 100
+    btnStyle =
+      if skill.locked then [ ("display", "block") ] else [ ("display", "none") ]
   in
     div [ class "card" ]
       [ div [ class textClass ]
           [ button [ type_ "button", class "btn btn-lg btn-primary float-right", style btnStyle, onClick (UnlockSkill index), disabled (not availableToUnlock) ] [ text "Unlock" ]
-          , h4 [ class "card-title" ] [ text skill.title ]
+          , h4 [ class "card-title" ] [ text skill.name ]
           , p [ class "card-text" ] [ text skill.description ]
           , div [ class "progress" ]
               [ div [ class "progress-bar", style [ ("width", (toString progress) ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" (toString progress), attribute "aria-valuemin" "0", attribute "aria-valuemax" (toString marker) ] [] ]

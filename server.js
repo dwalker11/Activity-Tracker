@@ -8,6 +8,7 @@ const MemcachedStore = require('connect-memcached')(session);
 const flash = require('connect-flash');
 const passport = require('passport');
 const path = require('path');
+const db = require('./db');
 
 const app = express();
 
