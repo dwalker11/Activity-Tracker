@@ -312,7 +312,7 @@ addTimeModal list =
 
 addSkillForm : Generator -> Html Msg
 addSkillForm newSkill =
-  div [ class "row" ]
+  div [ class "row p-4 text-right" ]
     [ div [ class "col" ]
         [ form []
             [ div [ class "form-group row" ]
@@ -325,7 +325,7 @@ addSkillForm newSkill =
                 , div [ class "col-sm-10" ]
                     [ input [ type_ "text", class "form-control", id "somethingDescription", onInput UpdateNewSkillDescription ] [] ]
                 ]
-            , button [ type_ "button", class "btn btn-primary", onClick CreateNewSkill ] [ text "Add" ]
+            , button [ type_ "button", class "btn btn-lg btn-light", onClick CreateNewSkill ] [ text "Add" ]
             ]
         ]
     ]
@@ -344,12 +344,16 @@ overvallProgress list =
     progress =
       (toFloat totalMinutes) / marker * 100
   in
-    div [ class "card" ]
-      [ div [ class "card-body" ]
-          [ h4 [ class "card-title" ] [ text "Overall Progress" ]
-          , div [ class "progress" ]
-              [ div [ class "progress-bar", style [ ("width", (toString progress) ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" (toString progress), attribute "aria-valuemin" "0", attribute "aria-valuemax" (toString marker) ] [] ]
+    div [ class "row p-4" ]
+      [ div [ class "col" ]
+        [ div [ class "card" ]
+          [ div [ class "card-body" ]
+              [ h4 [ class "card-title" ] [ text "Overall Progress" ]
+              , div [ class "progress" ]
+                  [ div [ class "progress-bar", style [ ("width", (toString progress) ++ "%") ], attribute "role" "progressbar", attribute "aria-valuenow" (toString progress), attribute "aria-valuemin" "0", attribute "aria-valuemax" (toString marker) ] [] ]
+              ]
           ]
+        ]
       ]
 
 skillList : Array Skill -> Html Msg
@@ -375,7 +379,7 @@ skillList list =
         |> indexedMap skillComponent
         |> toList
   in
-    div [ class "row" ]
+    div [ class "row p-4" ]
       [ div [ class "col" ] componentList ]
 
 skillComponent : Int -> (Skill, Bool) -> Html Msg

@@ -1,5 +1,23 @@
 extends layout
 
 block content
-  div.container
-    h1 Skill Tracker
+  div.site-wrapper
+    div.site-wrapper-inner
+      div.cover-container
+        header(class=["masthead", "clearfix"])
+          div.inner
+            h3.masthead-brand Skill Tracker
+            nav(class=["nav", "nav-masthead"])
+              a(class=["nav-link", "active"] href="#") Home
+              a(class=["nav-link"] href="/register") Register
+              a(class=["nav-link"] href="/login") Login
+
+        main(class=["inner", "cover", "text-center"] role="main")
+          h1.cover-heading Skill Tracker
+          p.lead SkillTracker is a wonderful tool that helps organize the many skills in your life in a gamified way.
+          p.lead
+            a(class=["btn", "btn-lg", "btn-secondary"] href="/register") Sign Up
+
+        footer(class=["mastfoot", "text-center"])
+          div.inner
+            p Cover template for #[a(href="https://getbootstrap.com/") Boostrap ], by #[a(href="https://twitter.com/mdo") @mdo ].
