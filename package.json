@@ -1,7 +1,7 @@
 {
-  "name": "app",
+  "name": "skillz",
   "version": "1.0.0",
-  "description": "A simple application",
+  "description": "A simple skill tracker",
   "main": "server.js",
   "dependencies": {
     "bcrypt": "^1.0.3",
