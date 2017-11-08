@@ -259,8 +259,7 @@ view : Model -> Html Msg
 view model =
   div []
     [ addTimeModal model.userSkills
-    , addSkillForm model.skillGenerator
-    , hr [] []
+    , addSkillModal model.skillGenerator
     , overvallProgress model.userSkills
     , hr [] []
     , skillList model.userSkills
@@ -283,7 +282,7 @@ addTimeModal list =
         |> toList
         |> List.map (\(index, name) -> option [ value (toString index) ] [ text name ])
   in
-    div [ class "modal fade", id "somethingModal" ]
+    div [ class "modal fade", id "addTimeModal" ]
       [ div [ class "modal-dialog modal-lg", attribute "role" "document" ]
           [ div [ class "modal-content" ]
               [ div [ class "modal-header" ]
@@ -310,22 +309,30 @@ addTimeModal list =
           ]
       ]
 
-addSkillForm : Generator -> Html Msg
-addSkillForm newSkill =
-  div [ class "row p-4 text-right" ]
-    [ div [ class "col" ]
-        [ form []
-            [ div [ class "form-group row" ]
-                [ label [ for "somethingName", class "col-sm-2 col-form-label" ] [ text "Name" ]
-                , div [ class "col-sm-10" ]
-                    [ input [ type_ "text", class "form-control", id "somethingName", onInput UpdateNewSkillName ] [] ]
+addSkillModal : Generator -> Html Msg
+addSkillModal newSkill =
+  div [ class "modal fade", id "addSkillModal" ]
+    [ div [ class "modal-dialog modal-lg", attribute "role" "document" ]
+        [ div [ class "modal-content" ]
+            [ div [ class "modal-header" ]
+                [ h5 [ class "modal-title" ] [ text "Add a new Skill" ]
+                , button [ type_ "button", class "close", attribute "data-dismiss" "modal", attribute "aria-label" "Close" ] [ span [ attribute "aria-hidden" "true" ] [text "×" ] ]
                 ]
-            , div [ class "form-group row" ]
-                [ label [ for "somethingDescription", class "col-sm-2 col-form-label" ] [ text "Description" ]
-                , div [ class "col-sm-10" ]
-                    [ input [ type_ "text", class "form-control", id "somethingDescription", onInput UpdateNewSkillDescription ] [] ]
+            , div [ class "modal-body" ]
+                [ form []
+                    [ div [ class "form-group row" ]
+                        [ label [ for "somethingName", class "col-sm-2 col-form-label" ] [ text "Name" ]
+                        , div [ class "col-sm-10" ]
+                            [ input [ type_ "text", class "form-control", id "somethingName", onInput UpdateNewSkillName ] [] ]
+                        ]
+                    , div [ class "form-group row" ]
+                        [ label [ for "somethingDescription", class "col-sm-2 col-form-label" ] [ text "Description" ]
+                        , div [ class "col-sm-10" ]
+                            [ input [ type_ "text", class "form-control", id "somethingDescription", onInput UpdateNewSkillDescription ] [] ]
+                        ]
+                    , button [ type_ "button", class "btn btn-primary float-right", onClick CreateNewSkill ] [ text "Add" ]
+                    ]
                 ]
-            , button [ type_ "button", class "btn btn-lg btn-light", onClick CreateNewSkill ] [ text "Add" ]
             ]
         ]
     ]
