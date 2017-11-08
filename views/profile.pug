@@ -4,8 +4,10 @@ block content
   main
     div#app
     div.fixed-bottom
-      button(class=["btn", "btn-lg", "btn-light", "float-right", "m-4"] type="button")&attributes({'data-toggle': 'modal', 'data-target': '#addTimeModal'}) *
-      button(class=["btn", "btn-lg", "btn-light", "float-right", "m-4"] type="button")&attributes({'data-toggle': 'modal', 'data-target': '#addSkillModal'}) +
+      button(class=["btn", "btn-lg", "btn-light", "float-right", "m-4"] type="button")&attributes({'data-toggle': 'modal', 'data-target': '#addTimeModal'})
+        i(class=["fa", "fa-clock-o"] aria-hidden="true")
+      button(class=["btn", "btn-lg", "btn-light", "float-right", "m-4"] type="button")&attributes({'data-toggle': 'modal', 'data-target': '#addSkillModal'})
+        i(class=["fa", "fa-plus"] aria-hidden="true")
 
 block append scripts
   script.

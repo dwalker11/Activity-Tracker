@@ -30,6 +30,12 @@ module.exports = {
 					fallback: 'style-loader',
 					use: ['css-loader', 'postcss-loader', 'sass-loader']
 				})
+			},
+			{
+				test: /\.(png|svg|jpg|gif)$/,
+				use: [
+					{loader: 'file-loader', options: {useRelativePath: true, outputPath: 'styles'}}
+				]
 			}
 		]
 	},
