@@ -3,7 +3,7 @@ const User = require('../models/User');
 const router = express.Router();
 
 router.use(function (req, res, next) {
-  if (req.isAuthenticated()) {
+  if (res.locals.isAuthenticated) {
     return next();
 	}
 

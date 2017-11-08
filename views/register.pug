@@ -1,26 +1,18 @@
 extends layout
 
 block content
-  div.container
-    header(class=["p-2", "mb-4"])
-      h3.float-left Skill Tracker
-      nav(class=["nav", "justify-content-end"])
-        a(class=["nav-link"] href="/") Home
-        a(class=["nav-link", "active"] href="#") Register
-        a(class=["nav-link"] href="/login") Login
-
-    main
-      div(class=["row", "text-center", "justify-content-center"])
-        div(class=["col-sm-12", "p-4"])
-          h1 Sign Up
-        div(class=["col-sm-4", "p-4"])
-          form(action="/register" method="post")
-            div.form-group
-              input.form-control(type="text" name="username" placeholder="Enter Username")
-            div.form-group
-              input.form-control(type="text" name="email" placeholder="Enter Email")
-            div.form-group
-              input.form-control(type="password" name="password" placeholder="Enter Password")
-            div.form-group
-              input.form-control(type="password" name="password_confirm" placeholder="Confirm Password")
-            button(class=["btn", "btn-lg", "btn-light"] type="submit") Submit
+  main
+    div(class=["row", "text-center", "justify-content-center"])
+      div(class=["col-sm-12", "p-4"])
+        h1 Sign Up
+      div(class=["col-sm-4", "p-4"])
+        form(action="/register" method="post")
+          div.form-group
+            input.form-control(type="text" name="username" placeholder="Enter Username")
+          div.form-group
+            input.form-control(type="text" name="email" placeholder="Enter Email")
+          div.form-group
+            input.form-control(type="password" name="password" placeholder="Enter Password")
+          div.form-group
+            input.form-control(type="password" name="password_confirm" placeholder="Confirm Password")
+          button(class=["btn", "btn-lg", "btn-light"] type="submit") Submit

@@ -1,17 +1,10 @@
 extends layout
 
 block content
-  div.container
-    header(class=["p-2", "mb-4"])
-      h3.float-left Skill Tracker
-      nav(class=["nav", "justify-content-end"])
-        a(class=["nav-link"] href="/") Home
-        a(class=["nav-link"] href="/login") Login
-
-    main
-      div#app
-      div.fixed-bottom
-        button(class=["btn", "btn-lg", "btn-light", "float-right", "m-4"] type="button")&attributes({'data-toggle': 'modal', 'data-target': '#somethingModal'}) +
+  main
+    div#app
+    div.fixed-bottom
+      button(class=["btn", "btn-lg", "btn-light", "float-right", "m-4"] type="button")&attributes({'data-toggle': 'modal', 'data-target': '#somethingModal'}) +
 
 block append scripts
   script.
