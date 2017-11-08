@@ -18,7 +18,7 @@ router.get('/', function (req, res) {
 	res.render('profile', { user: user });
 });
 
-router.post('/skills', function (req, res) {
+router.post('/', function (req, res) {
   let user = req.user;
   let name = req.body.name;
   let desc = req.body.description;
@@ -41,7 +41,7 @@ router.post('/skills', function (req, res) {
   });
 });
 
-router.patch('/skills/:id', function (req, res) {
+router.patch('/:id', function (req, res) {
   let user = req.user;
   let field = req.body.field;
   let value = req.body.value;
@@ -58,7 +58,7 @@ router.patch('/skills/:id', function (req, res) {
   });
 });
 
-router.delete('/skills/:id', function (req, res) {
+router.delete('/:id', function (req, res) {
   let user = req.user;
   let skill = user.skills.id(req.params.id).remove();
 

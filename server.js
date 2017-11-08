@@ -28,6 +28,7 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
+// check if this is an authenticated request
 app.use(function(req, res, next){
   res.locals.isAuthenticated = req.isAuthenticated();
   next();
@@ -35,7 +36,7 @@ app.use(function(req, res, next){
 
 // application routes
 app.use('/', require('./routes/index'));
-app.use('/profile', require('./routes/profile'));
+app.use('/skills', require('./routes/skills'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
