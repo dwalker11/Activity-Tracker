@@ -215,7 +215,7 @@ postSkill : Skill -> Http.Request String
 postSkill skill =
   let
     url =
-      "/profile/skills"
+      "/skills/skills"
 
     payload =
       Json.Encode.object
@@ -229,7 +229,7 @@ patchSkill : Skill -> Json.Encode.Value -> Json.Encode.Value -> Http.Request (Li
 patchSkill skill field value =
   let
     url =
-      "/profile/skills/" ++ skill.id
+      "/skills/skills/" ++ skill.id
 
     payload =
       Json.Encode.object

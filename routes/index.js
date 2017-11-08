@@ -35,11 +35,19 @@ passport.deserializeUser(function (id, done) {
 const router = express.Router();
 
 router.get('/', function (req, res) {
-	res.render('index');
+	if (res.locals.isAuthenticated) {
+    return res.redirect('/skills');
+	}
+
+  res.render('index');
 });
 
 router.get('/register', function (req, res) {
-	res.render('register');
+	if (res.locals.isAuthenticated) {
+    return res.redirect('/skills');
+	}
+
+  res.render('register');
 });
 
 router.post('/register', function (req, res) {
@@ -60,18 +68,22 @@ router.post('/register', function (req, res) {
 			req.login(user, function (err) {
 				if (err) return next(err);
 
-				res.redirect('/profile');
+				res.redirect('/skills');
 			});
 		});
 	});
 });
 
 router.get('/login', function (req, res) {
-	res.render('login');
+	if (res.locals.isAuthenticated) {
+    return res.redirect('/skills');
+	}
+
+  res.render('login');
 });
 
 router.post('/login', passport.authenticate('local', {
-	successRedirect: '/profile',
+	successRedirect: '/skills',
 	failureRedirect: '/login',
 	failureFlash: true
 }));
