@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const url = 'mongodb://localhost:27017/skillz';
+const url = process.env.MONGODB_URI;
 
 mongoose.connect(url, { useMongoClient: true });
 mongoose.Promise = global.Promise;

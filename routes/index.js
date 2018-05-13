@@ -50,7 +50,7 @@ router.get('/register', function (req, res) {
   res.render('register');
 });
 
-router.post('/register', function (req, res) {
+router.post('/register', function (req, res, next) {
 	const saltRounds = 10;
 
 	bcrypt.hash(req.body.password, saltRounds, function (err, hash) {

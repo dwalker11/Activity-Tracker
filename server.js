@@ -9,6 +9,8 @@ const flash = require('connect-flash');
 const passport = require('passport');
 const path = require('path');
 const db = require('./db');
+const client = require('./redis');
+console.log('The redis client is: ' + client);
 
 const app = express();
 
@@ -23,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(session({ secret: 'call your girlfriend', resave: false, saveUninitialized: true, cookie: {maxAge: 3600000}, store: new RedisStore({ client: '', host: '127.0.0.1', port: '6379' }) }));
+app.use(session({ secret: 'call your girlfriend', resave: false, saveUninitialized: true, cookie: {maxAge: 3600000}, store: new RedisStore({ client: client }) }));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -56,6 +58,6 @@ app.use(function (err, req, res, next) {
 });
 
 // listen for incoming requests
-app.listen(3000, function () {
+app.listen(process.env.PORT || 3000, function () {
 	console.log('Example app listening on port 3000!');
 });
