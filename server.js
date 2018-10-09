@@ -8,9 +8,8 @@ const RedisStore = require('connect-redis')(session);
 const flash = require('connect-flash');
 const passport = require('passport');
 const path = require('path');
-const db = require('./db');
+const db = require('./mongo');
 const client = require('./redis');
-console.log('The redis client is: ' + client);
 
 const app = express();
 
@@ -58,6 +57,6 @@ app.use(function (err, req, res, next) {
 });
 
 // listen for incoming requests
-app.listen(process.env.PORT || 3000, function () {
-	console.log('Example app listening on port 3000!');
+app.listen(process.env.PORT || 8080, function () {
+	console.log('Example app listening on port 8080!');
 });
