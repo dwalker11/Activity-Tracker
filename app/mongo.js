@@ -11,7 +11,5 @@ mongoose.Promise = global.Promise;
 
 const db = mongoose.connection;
 
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
-	console.log('We\'re in mongo!');
-});
+db.on('error', (err) => console.error(`connection error: ${err}`));
+db.once('open', () => console.log(`We're in mongo!`));

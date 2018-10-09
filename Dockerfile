@@ -1,5 +1,5 @@
 FROM node:carbon
-ADD . /code
+ADD ./app /code
 WORKDIR /code
 RUN npm install
 CMD ["npm", "start"]
