@@ -30,7 +30,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // check if this is an authenticated request
-app.use(function(req, res, next){
+app.use((req, res, next) => {
   res.locals.isAuthenticated = req.isAuthenticated();
   next();
 });
@@ -40,7 +40,7 @@ app.use('/', require('./routes/index'));
 app.use('/skills', require('./routes/skills'));
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
 	let err = new Error('Not Found');
 	err.status = 404;
 
@@ -48,7 +48,7 @@ app.use(function (req, res, next) {
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use((err, req, res, next) => {
 	res.locals.message = err.message;
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
 
@@ -57,6 +57,4 @@ app.use(function (err, req, res, next) {
 });
 
 // listen for incoming requests
-app.listen(process.env.PORT || 8080, function () {
-	console.log('Example app listening on port 8080!');
-});
+app.listen(process.env.PORT || 8080, () => console.log('Example app listening on port 8080!'));

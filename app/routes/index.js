@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
 // passport authentication middleware
-passport.use(new LocalStrategy(function (username, password, done) {
-	User.findOne({username: username}, function (err, user) {
+passport.use(new LocalStrategy((username, password, done) => {
+	User.findOne({username: username}, (err, user) => {
 		if (err) return done(err);
 
 		if (!user) {
@@ -21,12 +21,12 @@ passport.use(new LocalStrategy(function (username, password, done) {
 	});
 }));
 
-passport.serializeUser(function (user, done) {
+passport.serializeUser((user, done) => {
 	done(null, user.id);
 });
 
-passport.deserializeUser(function (id, done) {
-	User.findById(id, function (err, user) {
+passport.deserializeUser((id, done) => {
+	User.findById(id, (err, user) => {
 		done(err, user);
 	});
 });
@@ -34,7 +34,7 @@ passport.deserializeUser(function (id, done) {
 // routes
 const router = express.Router();
 
-router.get('/', function (req, res) {
+router.get('/', (req, res) => {
 	if (res.locals.isAuthenticated) {
     return res.redirect('/skills');
 	}
@@ -42,7 +42,7 @@ router.get('/', function (req, res) {
   res.render('index');
 });
 
-router.get('/register', function (req, res) {
+router.get('/register', (req, res) => {
 	if (res.locals.isAuthenticated) {
     return res.redirect('/skills');
 	}
@@ -50,10 +50,10 @@ router.get('/register', function (req, res) {
   res.render('register');
 });
 
-router.post('/register', function (req, res, next) {
+router.post('/register', (req, res, next) => {
 	const saltRounds = 10;
 
-	bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
+	bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
 		if (err) return next(err);
 
 		let newUser = {
@@ -62,10 +62,10 @@ router.post('/register', function (req, res, next) {
 			password: hash
 		};
 
-		User.create(newUser, function (err, user) {
+		User.create(newUser, (err, user) => {
 			if (err) return next(err);
 
-			req.login(user, function (err) {
+			req.login(user, (err) => {
 				if (err) return next(err);
 
 				res.redirect('/skills');
@@ -74,7 +74,7 @@ router.post('/register', function (req, res, next) {
 	});
 });
 
-router.get('/login', function (req, res) {
+router.get('/login', (req, res) => {
 	if (res.locals.isAuthenticated) {
     return res.redirect('/skills');
 	}
@@ -88,7 +88,7 @@ router.post('/login', passport.authenticate('local', {
 	failureFlash: true
 }));
 
-router.get('/logout', function (req, res) {
+router.get('/logout', (req, res) => {
 	req.logout();
 	res.redirect('/login');
 })

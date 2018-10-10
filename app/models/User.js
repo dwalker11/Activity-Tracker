@@ -1,7 +1,7 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
 
-var SkillSchema = new Schema({
+const Schema = mongoose.Schema;
+const SkillSchema = new Schema({
   name: {
     type: String,
     required: true
@@ -21,7 +21,7 @@ var SkillSchema = new Schema({
   }
 });
 
-var UserSchema = new Schema({
+const UserSchema = new Schema({
   username: {
     type: String,
     required: true

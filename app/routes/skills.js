@@ -2,7 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
 
-router.use(function (req, res, next) {
+router.use((req, res, next) => {
   if (res.locals.isAuthenticated) {
     return next();
 	}
@@ -10,7 +10,7 @@ router.use(function (req, res, next) {
   res.redirect('/login');
 });
 
-router.get('/', function (req, res) {
+router.get('/', (req, res) => {
   let user = {
     skills: req.user.skills
   };
@@ -18,7 +18,7 @@ router.get('/', function (req, res) {
 	res.render('profile', { user: user });
 });
 
-router.post('/', function (req, res) {
+router.post('/', (req, res) => {
   let user = req.user;
   let name = req.body.name;
   let desc = req.body.description;
@@ -28,7 +28,7 @@ router.post('/', function (req, res) {
     description: desc
   });
 
-  user.save(function (err, user) {
+  user.save((err, user) => {
     if (err) return next(err);
 
     let index = user.skills.length - 1;
@@ -41,7 +41,7 @@ router.post('/', function (req, res) {
   });
 });
 
-router.patch('/:id', function (req, res) {
+router.patch('/:id', (req, res) => {
   let user = req.user;
   let field = req.body.field;
   let value = req.body.value;
@@ -49,7 +49,7 @@ router.patch('/:id', function (req, res) {
 
   skill[field] = value;
 
-  user.save(function (err) {
+  user.save((err) => {
     if (err) return next(err);
 
     res.json({
@@ -58,11 +58,11 @@ router.patch('/:id', function (req, res) {
   });
 });
 
-router.delete('/:id', function (req, res) {
+router.delete('/:id', (req, res) => {
   let user = req.user;
   let skill = user.skills.id(req.params.id).remove();
 
-  user.save(function (err) {
+  user.save((err) => {
     if (err) return next(err);
 
     res.json({
